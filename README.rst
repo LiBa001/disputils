@@ -5,6 +5,31 @@ Disputils
 Disputils provides some neat features to make your life as a bot developer easier.
 
 
+Install
+#######
+
+Install latest release from PyPI_ via pip:
+
+.. code-block:: bash
+
+    python3.6 -m pip install disputils
+
+Or the freshest bleeding-edge code directly from GitHub_ using pip and git:
+
+.. code-block:: bash
+
+    python3.6 -m pip install -U git+https://github.com/LiBa001/disputils
+
+
+.. note::
+
+    In both cases you also have to install `discord.py v1.0.0`_ manually from GitHub:
+
+    .. code-block:: bash
+
+        python3.6 -m pip install -U git+https://github.com/Rapptz/discord.py@rewrite
+
+
 Features
 ########
 
@@ -40,7 +65,7 @@ Split your content into multiple pages and use reactions to paginate through.
         paginator = BotEmbedPaginator(ctx, embeds)
         await paginator.run()
 
-.. image:: docs/img/paginate.png
+.. image:: https://github.com/LiBa001/disputils/blob/master/docs/img/paginate.png
 
 
 Multiple Choice
@@ -57,7 +82,7 @@ Let the user decide. Provide multiple choice!
 
         await multiple_choice.quit(multiple_choice.choice)
 
-.. image:: docs/img/choice.png
+.. image:: https://github.com/LiBa001/disputils/blob/master/docs/img/choice.png
 
 
 Confirmation
@@ -77,7 +102,7 @@ Is the user going to do something irreversible? Let him confirm first!
         else:
             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
 
-.. image:: docs/img/confirm.png
+.. image:: https://github.com/LiBa001/disputils/blob/master/docs/img/confirm.png
 
 
 Requirements
@@ -88,3 +113,5 @@ Requirements
 
 
 .. _discord.py v1.0.0: https://github.com/Rapptz/discord.py/tree/rewrite
+.. _PyPI: https://pypi.org
+.. _GitHub: https://github.com/LiBa001/disputils
