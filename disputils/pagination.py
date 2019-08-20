@@ -29,9 +29,13 @@ class EmbedPaginator(Dialog):
     def formatted_pages(self):
         pages = deepcopy(self.pages)  # copy by value not reference
         for page in pages:
-            page.set_footer(
-                text=f" ( {pages.index(page)+1} | {len(pages)} )"
-            )
+            if page.footer.text == discord.Embed.Empty:
+                page.set_footer(text=f"({pages.index(page)+1}/{len(pages)})")
+            else:
+                if page.footer.icon_url == discord.Embed.Empty:
+                    page.set_footer(text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
+                else:
+                    page.set_footer(icon_url=page.footer.icon_url, text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
         return pages
 
     async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
