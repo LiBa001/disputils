@@ -29,13 +29,9 @@ class EmbedPaginator(Dialog):
     def formatted_pages(self):
         pages = deepcopy(self.pages)  # copy by value not reference
         for page in pages:
-            if page.footer.text == discord.Embed.Empty:
-                page.set_footer(text=f"({pages.index(page)+1}/{len(pages)})")
-            else:
-                if page.footer.icon_url == discord.Embed.Empty:
-                    page.set_footer(text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
-                else:
-                    page.set_footer(icon_url=page.footer.icon_url, text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
+            page.set_footer(
+                text=f" ( {pages.index(page)+1} | {len(pages)} )"
+            )
         return pages
 
     async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
@@ -107,8 +103,11 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.message.edit(embed=self.formatted_pages[load_page_index])
-            await self.message.remove_reaction(reaction, user)
-
+            try:
+                await self.message.remove_reaction(reaction, user)
+            # avoid any errors if no permissions or if its in a dm  
+            except:
+                pass
             current_page_index = load_page_index
 
     @staticmethod
