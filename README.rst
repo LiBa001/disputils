@@ -23,11 +23,9 @@ Or the freshest bleeding-edge code directly from GitHub_ using pip and git:
 
 .. note::
 
-    In both cases you also have to install `discord.py v1.0.0`_ manually from GitHub:
-
-    .. code-block:: bash
-
-        python3.6 -m pip install -U git+https://github.com/Rapptz/discord.py@rewrite
+    A compatible version of `discord.py` will be installed automatically when
+    downloading with pip. However, you should still require `discord.py` in
+    your own setup.py or requirements.txt file.
 
 
 Features
