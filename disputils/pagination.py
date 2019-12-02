@@ -84,7 +84,7 @@ class EmbedPaginator(Dialog):
             try:
                 reaction, user = await self._client.wait_for('reaction_add', check=check, timeout=100)
             except asyncio.TimeoutError:
-                if not isinstance(channel, discord.channel.DMChannel) or not isinstance(channel, discord.channel.GroupChannel):
+                if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
                     await self.message.clear_reactions()
                 return
 
@@ -108,7 +108,7 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.message.edit(embed=self.formatted_pages[load_page_index])
-            if not isinstance(channel, discord.channel.DMChannel) or not isinstance(channel, discord.channel.GroupChannel):
+            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
                 await self.message.remove_reaction(reaction, user)
 
             current_page_index = load_page_index
