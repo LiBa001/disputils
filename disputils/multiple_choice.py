@@ -15,10 +15,10 @@ class MultipleChoice(Dialog):
         self.title: str = title
         self.description: str = description
 
-        self.message: Message = None
+        self.message: Optional[Message] = None
         self._parse_kwargs(**kwargs)
 
-        self._embed: discord.Embed = None
+        self._embed: Optional[discord.Embed] = None
         self._emojis: List[str] = []
 
         self.close_emoji = '❌'
@@ -85,7 +85,8 @@ class MultipleChoice(Dialog):
 
         :param users: list of :class:`discord.User` that can use the reactions
         :param channel: Optional: The channel to send the message to.
-        :param kwargs: Optional: message`discord.Message`, timeout`int` seconds (default: 60)
+        :param kwargs: Optional: message`discord.Message`, timeout`int` seconds (default: 60),
+        closable`bool` (default: True)
 
         :rtype: tuple[str, discord.Message]
         :return: selected option and used message`discord.Message`
@@ -93,6 +94,7 @@ class MultipleChoice(Dialog):
 
         self._parse_kwargs(**kwargs)
         timeout = kwargs.get("timeout", 60)
+        closable: bool = kwargs.get("closable", True)
 
         config_embed = self._generate_embed()
 
@@ -120,7 +122,7 @@ class MultipleChoice(Dialog):
             self._choice = None
             return None, self.message
 
-        if reaction.emoji == self.close_emoji:
+        if closable and reaction.emoji == self.close_emoji:
             self._choice = None
             return None, self.message
 
