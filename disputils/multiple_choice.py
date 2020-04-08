@@ -109,7 +109,8 @@ class MultipleChoice(Dialog):
         for emoji in self._emojis:
             await self.message.add_reaction(emoji)
 
-        await self.message.add_reaction(self.close_emoji)
+        if closable:
+            await self.message.add_reaction(self.close_emoji)
 
         def check(r, u):
             res = (r.message.id == self.message.id) and (u.id in [_u.id for _u in users]) and (
