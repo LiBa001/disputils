@@ -118,7 +118,7 @@ class MultipleChoice(Dialog):
             await self.message.add_reaction(self.close_emoji)
 
         def check(r, u):
-            res = (r.message.id == self.message.id)
+            res = (r.message.id == self.message.id) and u.id != self._client.user.id
 
             if users is not None:
                 res = res and (u.id in [_u.id for _u in users])
