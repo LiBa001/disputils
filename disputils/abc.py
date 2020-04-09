@@ -1,11 +1,12 @@
 from abc import ABC
 from discord import Message, Embed
+from typing import Optional
 
 
 class Dialog(ABC):
     def __init__(self, *args, **kwargs):
-        self._embed: Embed = None
-        self.message: Message = None
+        self._embed: Optional[Embed] = None
+        self.message: Optional[Message] = None
         self.color: hex = kwargs.get("color") or kwargs.get("colour") or 0x000000
 
     async def quit(self, text: str = None):

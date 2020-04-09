@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import asyncio
 from .abc import Dialog
+from typing import Optional
 
 
 class Confirmation(Dialog):
@@ -15,7 +16,7 @@ class Confirmation(Dialog):
         self.emojis = {"✅": True, "❌": False}
         self._confirmed = None
         self.message = message
-        self._embed: discord.Embed = None
+        self._embed: Optional[discord.Embed] = None
 
     @property
     def confirmed(self):

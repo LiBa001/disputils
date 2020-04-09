@@ -35,7 +35,8 @@ class EmbedPaginator(Dialog):
                 if page.footer.icon_url == discord.Embed.Empty:
                     page.set_footer(text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
                 else:
-                    page.set_footer(icon_url=page.footer.icon_url, text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
+                    page.set_footer(icon_url=page.footer.icon_url,
+                                    text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
         return pages
 
     async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
@@ -84,7 +85,8 @@ class EmbedPaginator(Dialog):
             try:
                 reaction, user = await self._client.wait_for('reaction_add', check=check, timeout=100)
             except asyncio.TimeoutError:
-                if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
+                if not isinstance(channel, discord.channel.DMChannel) and \
+                        not isinstance(channel, discord.channel.GroupChannel):
                     await self.message.clear_reactions()
                 return
 
@@ -108,24 +110,25 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.message.edit(embed=self.formatted_pages[load_page_index])
-            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
+            if not isinstance(channel, discord.channel.DMChannel) and \
+                    not isinstance(channel, discord.channel.GroupChannel):
                 await self.message.remove_reaction(reaction, user)
 
             current_page_index = load_page_index
 
     @staticmethod
-    def generate_sub_lists(l: list) -> [list]:
-        if len(l) > 25:
+    def generate_sub_lists(origin_list: list) -> List[list]:
+        if len(origin_list) > 25:
             sub_lists = []
 
-            while len(l) > 20:
-                sub_lists.append(l[:20])
-                del l[:20]
+            while len(origin_list) > 20:
+                sub_lists.append(origin_list[:20])
+                del origin_list[:20]
 
-            sub_lists.append(l)
+            sub_lists.append(origin_list)
 
         else:
-            sub_lists = [l]
+            sub_lists = [origin_list]
 
         return sub_lists
 
