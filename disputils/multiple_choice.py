@@ -2,7 +2,7 @@ import discord
 from discord import Message, Client, TextChannel, User
 from discord.ext.commands import Context
 import asyncio
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Union
 from .abc import Dialog
 
 
@@ -79,11 +79,13 @@ class MultipleChoice(Dialog):
     def choice(self):
         return self._choice
 
-    async def run(self, users: List[User], channel: TextChannel = None, **kwargs) -> Tuple[Optional[str], Message]:
+    async def run(self, users: Union[User, List[User]] = None, channel: TextChannel = None, **kwargs) \
+            -> Tuple[Optional[str], Message]:
         """
         Run the multiple choice dialog.
 
-        :param users: list of :class:`discord.User` that can use the reactions
+        :param users: (list of) :class:`discord.User` that can use the reactions (default: `None`)
+        If this is `None`: Any user can interact.
         :param channel: Optional: The channel to send the message to.
         :param kwargs: Optional: message`discord.Message`, timeout`int` seconds (default: 60),
         closable`bool` (default: True)
@@ -91,6 +93,9 @@ class MultipleChoice(Dialog):
         :rtype: tuple[str, discord.Message]
         :return: selected option and used message`discord.Message`
         """
+
+        if type(users) == User:
+            users = [users]
 
         self._parse_kwargs(**kwargs)
         timeout = kwargs.get("timeout", 60)
@@ -113,8 +118,17 @@ class MultipleChoice(Dialog):
             await self.message.add_reaction(self.close_emoji)
 
         def check(r, u):
-            res = (r.message.id == self.message.id) and (u.id in [_u.id for _u in users]) and (
-                        r.emoji in self._emojis or r.emoji == self.close_emoji)
+            res = (r.message.id == self.message.id)
+
+            if users is not None:
+                res = res and (u.id in [_u.id for _u in users])
+
+            is_valid_emoji = r.emoji in self._emojis
+            if closable:
+                is_valid_emoji = is_valid_emoji or r.emoji == self.close_emoji
+
+            res = res and is_valid_emoji
+
             return res
 
         try:
@@ -123,7 +137,7 @@ class MultipleChoice(Dialog):
             self._choice = None
             return None, self.message
 
-        if closable and reaction.emoji == self.close_emoji:
+        if reaction.emoji == self.close_emoji:
             self._choice = None
             return None, self.message
 
@@ -139,11 +153,8 @@ class BotMultipleChoice(MultipleChoice):
 
         self._ctx = ctx
 
-    async def run(self, users: List[User] = None, channel: TextChannel = None, **kwargs)\
+    async def run(self, users: Union[User, List[User]] = None, channel: TextChannel = None, **kwargs)\
             -> Tuple[Optional[str], Message]:
-
-        if users is None:
-            users = [self._ctx.author]
 
         if self.message is None and channel is None:
             channel = self._ctx.channel
