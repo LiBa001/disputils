@@ -38,7 +38,7 @@ For all features there are two ways to use them.
 * just discord.py and a basic ``discord.Client``
 * discord.py commands extension (``discord.ext.commands``) and a ``Bot``
 
-In the following we're going to use the second way since it's a bit easier.
+In the following examples we're going to use the second way since it's a bit easier.
 
 .. code-block:: py
 
@@ -106,10 +106,10 @@ Is the user going to do something irreversible? Let him confirm first!
 Requirements
 ############
 
-* Python 3.6
-* `discord.py v1.0.0`_
+* Python >= 3.6
+* `discord.py >= v1.0.0 (rewrite)`_
 
 
-.. _discord.py v1.0.0: https://github.com/Rapptz/discord.py/tree/rewrite
-.. _PyPI: https://pypi.org
+.. _discord.py >= v1.0.0 (rewrite): https://discordpy.readthedocs.io/en/latest/migrating.html
+.. _PyPI: https://pypi.org/project/disputils/
 .. _GitHub: https://github.com/LiBa001/disputils
