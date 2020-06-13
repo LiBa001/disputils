@@ -7,7 +7,20 @@ from .abc import Dialog
 
 
 class MultipleChoice(Dialog):
-    def __init__(self, client: Client, options: list, title: str, description: str = "", **kwargs):
+    """
+    Generate and manage a reaction controlled rich embed multiple choice poll in Discord.
+
+    :param title: Embed title.
+    :type title: :class:`str`
+
+    :param description: Embed description.
+    :type description: :class:`str`
+
+    :param options: Options to choose from. Each option is going to be a separate embed field.
+    :type options: list[:class:`str`]
+    """
+
+    def __init__(self, client: Client, options: List[str], title: str, description: str = "", **kwargs):
         super().__init__(**kwargs)
 
         self._client: Client = client
@@ -84,14 +97,21 @@ class MultipleChoice(Dialog):
         """
         Run the multiple choice dialog.
 
-        :param users: (list of) :class:`discord.User` that can use the reactions (default: `None`)
-        If this is `None`: Any user can interact.
-        :param channel: Optional: The channel to send the message to.
-        :param kwargs: Optional: message`discord.Message`, timeout`int` seconds (default: 60),
-        closable`bool` (default: True)
+        :param users: Users that can use the reactions (default: `None`).
+            If this is ``None``: Any user can interact.
 
-        :rtype: tuple[str, discord.Message]
-        :return: selected option and used message`discord.Message`
+        :type users: list[:class:`discord.User`]
+
+        :param channel: The channel to send the message to.
+        :type channel: :class:`discord.TextChannel`, optional
+
+        :param kwargs:
+            - message :class:`discord.Message`
+            - timeout :class:`int` (seconds, default: ``60``),
+            - closable :class:`bool` (default: ``True``)
+
+        :return: selected option and used :class:`discord.Message`
+        :rtype: tuple[:class:`str`, :class:`discord.Message`]
         """
 
         if type(users) == User:
@@ -148,6 +168,8 @@ class MultipleChoice(Dialog):
 
 
 class BotMultipleChoice(MultipleChoice):
+    """ Same as :class:`MultipleChoice`, except for the discord.py commands extension. """
+
     def __init__(self, ctx: Context, options: list, title: str, description: str = "", **kwargs):
         super().__init__(ctx.bot, options, title, description, **kwargs)
 
