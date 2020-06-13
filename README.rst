@@ -1,3 +1,9 @@
+.. image:: https://badge.fury.io/py/disputils.svg
+  :target: https://pypi.org/project/disputils
+
+.. image:: https://img.shields.io/github/license/LiBa001/disputils
+  :target: https://github.com/LiBa001/disputils/blob/master/LICENSE
+
 *********
 Disputils
 *********
