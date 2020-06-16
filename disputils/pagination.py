@@ -9,7 +9,7 @@ from .abc import Dialog
 class EmbedPaginator(Dialog):
     """ Represents an interactive menu containing multiple embeds. """
 
-    def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None):
+    def __init__(self, client: discord.Client, pages: List[discord.Embed], message: discord.Message = None):
         """
         Initialize a new EmbedPaginator.
 
@@ -26,7 +26,9 @@ class EmbedPaginator(Dialog):
         self.control_emojis = ('⏮', '◀', '▶', '⏭', '⏹')
 
     @property
-    def formatted_pages(self):
+    def formatted_pages(self) -> List[discord.Embed]:
+        """ The embeds with formatted footers to act as pages. """
+
         pages = deepcopy(self.pages)  # copy by value not reference
         for page in pages:
             if page.footer.text == discord.Embed.Empty:
@@ -117,13 +119,36 @@ class EmbedPaginator(Dialog):
             current_page_index = load_page_index
 
     @staticmethod
-    def generate_sub_lists(origin_list: list) -> List[list]:
-        if len(origin_list) > 25:
+    def generate_sub_lists(origin_list: list, max_len: int = 25) -> List[list]:
+        """
+        Takes a list of elements and transforms it into a list of sub-lists of those elements
+        with each sublist containing max. ``max_len`` elements.
+
+        This can be used to easily split content for embed-fields across multiple pages.
+
+        .. note::
+
+            Discord allows max. 25 fields per Embed (see `Embed Limits`_).
+            Therefore, ``max_len`` must be set to a value of 25 or less.
+
+        .. _Embed Limits: https://discord.com/developers/docs/resources/channel#embed-limits
+
+        :param origin_list: total list of elements
+        :type origin_list: :class:`list`
+
+        :param max_len: maximal length of a sublist
+        :type max_len: :class:`int`, optional
+
+        :return: list of sub-lists of elements
+        :rtype: ``List[list]``
+        """
+
+        if len(origin_list) > max_len:
             sub_lists = []
 
-            while len(origin_list) > 20:
-                sub_lists.append(origin_list[:20])
-                del origin_list[:20]
+            while len(origin_list) > max_len:
+                sub_lists.append(origin_list[:max_len])
+                del origin_list[:max_len]
 
             sub_lists.append(origin_list)
 

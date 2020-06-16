@@ -82,14 +82,18 @@ class MultipleChoice(Dialog):
         return config_embed
 
     @property
-    def embed(self):
+    def embed(self) -> discord.Embed:
+        """ The generated embed. """
+
         if self._embed is None:
             self._generate_embed()
 
         return self._embed
 
     @property
-    def choice(self):
+    def choice(self) -> str:
+        """ The option that the user chose. """
+
         return self._choice
 
     async def run(self, users: Union[User, List[User]] = None, channel: TextChannel = None, **kwargs) \
