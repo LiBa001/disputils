@@ -3,6 +3,13 @@
 Code Reference
 ==============
 
+Dialog
+######
+
+.. autoclass:: disputils.abc.Dialog
+    :members:
+
+
 Pagination
 ##########
 

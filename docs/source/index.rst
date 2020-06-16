@@ -10,6 +10,7 @@ Welcome to disputils
    :maxdepth: 2
    :caption: Contents:
 
+   quickstart
    reference
 
 

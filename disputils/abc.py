@@ -4,6 +4,8 @@ from typing import Optional
 
 
 class Dialog(ABC):
+    """ Abstract base class defining a general embed dialog interaction. """
+
     def __init__(self, *args, **kwargs):
         self._embed: Optional[Embed] = None
         self.message: Optional[Message] = None
@@ -13,8 +15,10 @@ class Dialog(ABC):
         """
         Quit the dialog.
 
-        :param text:
-        :return:
+        :param text: message text to display when dialog is closed
+        :type text: :class:`str`, optional
+
+        :rtype: ``None``
         """
 
         if text is None:
@@ -25,12 +29,12 @@ class Dialog(ABC):
 
     async def update(self, text: str, color: hex = None, hide_author: bool = False):
         """
-        This will update the confirmation embed.
+        This will update the dialog embed.
 
         :param text: The new text.
         :param color: The new embed color.
-        :param hide_author: True if you want to hide the embed author. Default's to False.
-        :return: Nothing.
+        :param hide_author: True if you want to hide the embed author (default: ``False``).
+        :rtype: ``None``
         """
 
         if color is None:
@@ -46,11 +50,11 @@ class Dialog(ABC):
 
     async def display(self, text: str = None, embed: Embed = None):
         """
-        This will edit the confirmation message.
+        This will edit the dialog message.
 
         :param text: The new text.
         :param embed: The new embed.
-        :return: Nothing.
+        :rtype: ``None``
         """
 
         await self.message.edit(content=text, embed=embed)
