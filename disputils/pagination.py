@@ -2,20 +2,22 @@ import discord
 from discord.ext import commands
 import asyncio
 from copy import deepcopy
-from typing import List
+from typing import List, Tuple
 from .abc import Dialog
 
 
 class EmbedPaginator(Dialog):
     """ Represents an interactive menu containing multiple embeds. """
 
-    def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None):
+   def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None, *,
+                control_emojis: Tuple[str, str, str, str, str] = None):
         """
         Initialize a new EmbedPaginator.
 
         :param client: The :class:`discord.Client` to use.
         :param pages: A list of :class:`discord.Embed` to paginate through.
         :param message: An optional :class:`discord.Message` to edit. Otherwise a new message will be sent.
+        :param control_emojis: An option :class:`typing.Tuple` of control emojis to use, otherwise the default will be used
         """
         super().__init__()
 
@@ -23,7 +25,7 @@ class EmbedPaginator(Dialog):
         self.pages = pages
         self.message = message
 
-        self.control_emojis = ('⏮', '◀', '▶', '⏭', '⏹')
+        self.control_emojis = control_emojis or ('⏮', '◀', '▶', '⏭', '⏹')
 
     @property
     def formatted_pages(self):
