@@ -133,7 +133,8 @@ class EmbedPaginator(Dialog):
 
 
 class BotEmbedPaginator(EmbedPaginator):
-    def __init__(self, ctx: commands.Context, pages: [discord.Embed], message: discord.Message = None):
+    def __init__(self, ctx: commands.Context, pages: [discord.Embed], message: discord.Message = None
+                 control_emojis: Tuple[str, str, str, str, str] = None):
         """
         Initialize a new EmbedPaginator.
 
@@ -143,7 +144,7 @@ class BotEmbedPaginator(EmbedPaginator):
         """
         self._ctx = ctx
 
-        super(BotEmbedPaginator, self).__init__(ctx.bot, pages, message)
+        super(BotEmbedPaginator, self).__init__(ctx.bot, pages, message, control_emojis)
 
     async def run(self, channel: discord.TextChannel = None, users: List[discord.User] = None):
         """
