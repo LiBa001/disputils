@@ -114,8 +114,8 @@ And then you can use all discord.Embed's methods to modify page.
 .. code-block:: py
 
     paginator = BotEmbedPaginator(ctx, embeds)
-    paginator.pages[0].title = "title text" # Set page1 title
-    paginator.pages[0].description = "description text" # Set page1 description
+    paginator.pages[0].add_field(name="field1", value="this is field 1") # Add page1 field
+    paginator.pages[0].set_image(url="img_url") # Set page1 image
     paginator.pages[1].set_thumbnail(url="img_url") # Set page2 thumbnail
     # ... and so on
     await paginator.run()
