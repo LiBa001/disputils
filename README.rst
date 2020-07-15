@@ -102,6 +102,23 @@ Is the user going to do something irreversible? Let him confirm first!
 
 .. image:: https://github.com/LiBa001/disputils/blob/master/docs/img/confirm.png
 
+Modify
+######
+
+Before ``await paginator.run()`` you can do some modify to embeds pages.
+
+* Use ``paginator.pages[index]`` to direction embed page (index:0 = page1; index:1 = page2 ...)
+
+And then you can use all discord.Embed's methods to modify page.
+
+.. code-block:: py
+
+    paginator = BotEmbedPaginator(ctx, embeds)
+    paginator.pages[0].title = "title text" # Set page1 title
+    paginator.pages[0].description = "description text" # Set page1 description
+    paginator.pages[1].set_thumbnail(url="img_url") # Set page2 thumbnail
+    # ... and so on
+    await paginator.run()
 
 Requirements
 ############
