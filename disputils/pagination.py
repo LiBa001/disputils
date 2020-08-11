@@ -9,7 +9,7 @@ from .abc import Dialog
 class EmbedPaginator(Dialog):
     """ Represents an interactive menu containing multiple embeds. """
 
-   def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None, *,
+    def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None, *,
                 control_emojis: Tuple[str, str, str, str, str] = None):
         """
         Initialize a new EmbedPaginator.
