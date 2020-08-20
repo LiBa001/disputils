@@ -139,8 +139,9 @@ class BotMultipleChoice(MultipleChoice):
 
         self._ctx = ctx
 
-    async def run(self, users: List[User] = None, channel: TextChannel = None, **kwargs)\
-            -> Tuple[Optional[str], Message]:
+    async def run(
+        self, users: List[User] = None, channel: TextChannel = None, **kwargs
+    ) -> Tuple[Optional[str], Message]:
 
         if users is None:
             users = [self._ctx.author]
