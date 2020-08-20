@@ -94,7 +94,7 @@ class BotConfirmation(Confirmation):
         return await super().confirm(text, user, channel)
 
     async def text_confirmation(
-        self, text: str, color: discord.Color, author: discord.User, show_author: bool, channel: discord.Channel, timeout: int
+        self, text: str, color: discord.Color, author: discord.User, show_author: bool, channel: discord.Channel, timeout: int = None
     ) -> bool:
         def input_check(msg: Message) -> bool:
             return msg.author == self._ctx.author and msg.channel == self._ctx.channel
@@ -107,7 +107,7 @@ class BotConfirmation(Confirmation):
             color=color
         )
 
-        reply = await self._client.wait_for("message", check=input_check).content  # extract the text at one go!
+        reply = await self._client.wait_for("message", check=input_check, timeout=timeout if not None).content  # extract the text at one go!
 
         if reply[0].lower() == "y":
             return True
