@@ -18,5 +18,5 @@ async def mass_purge(channel, limit: int, inclusive=False):
     else:
         messages = channel.history(limit=amount).flatten()
         for message in range(0, len(messages)):
-            if inclusive and message != 0:
+            if not inclusive and message != 0:
                 await messages[message].delete()
