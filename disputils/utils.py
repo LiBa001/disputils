@@ -6,7 +6,6 @@ async def mass_purge(channel, limit: int, inclusive=False):
             for i in range(iterations):
                 await channel.purge(limit=100)
             await channel.purge(limit=rem)
-            return
         else:
             for i in range(iterations):
                 messages = channel.history(limit=100).flatten()
