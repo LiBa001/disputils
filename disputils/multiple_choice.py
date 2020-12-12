@@ -7,13 +7,16 @@ from .abc import Dialog
 
 
 class MultipleChoice(Dialog):
-    def __init__(self, client: Client, options: list, title: str, description: str = "", **kwargs):
+    def __init__(self, client: Client, options: list, title: str, description: str = "", footer_text = None, footer_icon = None, timestamp = None, **kwargs):
         super().__init__(**kwargs)
 
         self._client: Client = client
         self.options: List[str] = options
         self.title: str = title
         self.description: str = description
+        self.footer_text = footer_text
+        self.footer_icon = footer_icon
+        self.embed_timestamp = timestamp
 
         self.message: Optional[Message] = None
         self._parse_kwargs(**kwargs)
@@ -55,6 +58,10 @@ class MultipleChoice(Dialog):
             description=self.description,
             color=self.color
         )
+        if self.footer_text:
+            config_embed.set_footer(text=self.footer_text, icon_url=self.footer_icon)
+        if self.embed_timestamp:
+            config_embed.timestamp = self.embed_timestamp
 
         emojis = self._generate_emojis()
 
