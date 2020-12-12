@@ -5,7 +5,7 @@ with open('README.rst', 'r', encoding='utf-8') as f:
 
 setup(
     name='disputils',
-    version='0.1.3',
+    version='0.1.4',
     description='Some utilities for discord.py. Making Discord bot development easier.',
     long_description=readme,
     long_description_content_type='text/x-rst',
