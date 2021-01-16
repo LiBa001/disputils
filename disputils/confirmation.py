@@ -74,7 +74,10 @@ class Confirmation(Dialog):
             self._confirmed = None
             return
         finally:
-            await msg.clear_reactions()
+            try:
+                await msg.clear_reactions()
+            except discord.Forbidden:
+                pass
 
         confirmed = self.emojis[reaction.emoji]
 
