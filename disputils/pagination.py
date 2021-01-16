@@ -9,6 +9,7 @@ from .abc import Dialog
 class EmbedPaginator(Dialog):
     """ Represents an interactive menu containing multiple embeds. """
 
+
     def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None, *,
                 control_emojis: Tuple[str, str, str, str, str] = None):
         """
@@ -28,7 +29,9 @@ class EmbedPaginator(Dialog):
         self.control_emojis = control_emojis or ('⏮', '◀', '▶', '⏭', '⏹')
 
     @property
-    def formatted_pages(self):
+    def formatted_pages(self) -> List[discord.Embed]:
+        """ The embeds with formatted footers to act as pages. """
+
         pages = deepcopy(self.pages)  # copy by value not reference
         for page in pages:
             if page.footer.text == discord.Embed.Empty:
@@ -37,7 +40,8 @@ class EmbedPaginator(Dialog):
                 if page.footer.icon_url == discord.Embed.Empty:
                     page.set_footer(text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
                 else:
-                    page.set_footer(icon_url=page.footer.icon_url, text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
+                    page.set_footer(icon_url=page.footer.icon_url,
+                                    text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
         return pages
 
     async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
@@ -86,7 +90,8 @@ class EmbedPaginator(Dialog):
             try:
                 reaction, user = await self._client.wait_for('reaction_add', check=check, timeout=100)
             except asyncio.TimeoutError:
-                if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
+                if not isinstance(channel, discord.channel.DMChannel) and \
+                        not isinstance(channel, discord.channel.GroupChannel):
                     try:
                         await self.message.clear_reactions()
                     except discord.Forbidden:
@@ -113,7 +118,8 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.message.edit(embed=self.formatted_pages[load_page_index])
-            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
+            if not isinstance(channel, discord.channel.DMChannel) and \
+                    not isinstance(channel, discord.channel.GroupChannel):
                 try:
                     await self.message.remove_reaction(reaction, user)
                 except discord.Forbidden:
@@ -122,18 +128,41 @@ class EmbedPaginator(Dialog):
             current_page_index = load_page_index
 
     @staticmethod
-    def generate_sub_lists(l: list) -> [list]:
-        if len(l) > 25:
+    def generate_sub_lists(origin_list: list, max_len: int = 25) -> List[list]:
+        """
+        Takes a list of elements and transforms it into a list of sub-lists of those elements
+        with each sublist containing max. ``max_len`` elements.
+
+        This can be used to easily split content for embed-fields across multiple pages.
+
+        .. note::
+
+            Discord allows max. 25 fields per Embed (see `Embed Limits`_).
+            Therefore, ``max_len`` must be set to a value of 25 or less.
+
+        .. _Embed Limits: https://discord.com/developers/docs/resources/channel#embed-limits
+
+        :param origin_list: total list of elements
+        :type origin_list: :class:`list`
+
+        :param max_len: maximal length of a sublist
+        :type max_len: :class:`int`, optional
+
+        :return: list of sub-lists of elements
+        :rtype: ``List[list]``
+        """
+
+        if len(origin_list) > max_len:
             sub_lists = []
 
-            while len(l) > 20:
-                sub_lists.append(l[:20])
-                del l[:20]
+            while len(origin_list) > max_len:
+                sub_lists.append(origin_list[:max_len])
+                del origin_list[:max_len]
 
-            sub_lists.append(l)
+            sub_lists.append(origin_list)
 
         else:
-            sub_lists = [l]
+            sub_lists = [origin_list]
 
         return sub_lists
 

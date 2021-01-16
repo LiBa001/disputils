@@ -1,3 +1,15 @@
+.. image:: https://badge.fury.io/py/disputils.svg
+    :target: https://pypi.org/project/disputils
+    :alt: PyPI
+
+.. image:: https://img.shields.io/github/license/LiBa001/disputils
+    :target: https://github.com/LiBa001/disputils/blob/master/LICENSE
+    :alt: License
+
+.. image:: https://readthedocs.org/projects/disputils/badge/?version=latest
+    :target: https://disputils.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation
+
 *********
 Disputils
 *********
@@ -38,7 +50,7 @@ For all features there are two ways to use them.
 * just discord.py and a basic ``discord.Client``
 * discord.py commands extension (``discord.ext.commands``) and a ``Bot``
 
-In the following we're going to use the second way since it's a bit easier.
+In the following examples we're going to use the second way since it's a bit easier.
 
 .. code-block:: py
 
@@ -63,7 +75,7 @@ Split your content into multiple pages and use reactions to paginate through.
         paginator = BotEmbedPaginator(ctx, embeds)
         await paginator.run()
 
-.. image:: https://github.com/LiBa001/disputils/blob/master/docs/img/paginate.png
+.. image:: https://raw.githubusercontent.com/LiBa001/disputils/master/docs/img/paginate.png
 
 
 Multiple Choice
@@ -80,7 +92,7 @@ Let the user decide. Provide multiple choice!
 
         await multiple_choice.quit(multiple_choice.choice)
 
-.. image:: https://github.com/LiBa001/disputils/blob/master/docs/img/choice.png
+.. image:: https://raw.githubusercontent.com/LiBa001/disputils/master/docs/img/choice.png
 
 
 Confirmation
@@ -100,16 +112,16 @@ Is the user going to do something irreversible? Let him confirm first!
         else:
             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
 
-.. image:: https://github.com/LiBa001/disputils/blob/master/docs/img/confirm.png
+.. image:: https://raw.githubusercontent.com/LiBa001/disputils/master/docs/img/confirm.png
 
 
 Requirements
 ############
 
-* Python 3.6
-* `discord.py v1.0.0`_
+* Python >= 3.6
+* `discord.py >= v1.0.0 (rewrite)`_
 
 
-.. _discord.py v1.0.0: https://github.com/Rapptz/discord.py/tree/rewrite
-.. _PyPI: https://pypi.org
+.. _discord.py >= v1.0.0 (rewrite): https://discordpy.readthedocs.io/en/latest/migrating.html
+.. _PyPI: https://pypi.org/project/disputils/
 .. _GitHub: https://github.com/LiBa001/disputils

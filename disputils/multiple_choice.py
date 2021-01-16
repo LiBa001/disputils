@@ -2,12 +2,25 @@ import discord
 from discord import Message, Client, TextChannel, User
 from discord.ext.commands import Context
 import asyncio
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Union
 from .abc import Dialog
 
 
 class MultipleChoice(Dialog):
-    def __init__(self, client: Client, options: list, title: str, description: str = "", **kwargs):
+    """
+    Generate and manage a reaction controlled rich embed multiple choice poll in Discord.
+
+    :param title: Embed title.
+    :type title: :class:`str`
+
+    :param description: Embed description.
+    :type description: :class:`str`
+
+    :param options: Options to choose from. Each option is going to be a separate embed field.
+    :type options: list[:class:`str`]
+    """
+
+    def __init__(self, client: Client, options: List[str], title: str, description: str = "", **kwargs):
         super().__init__(**kwargs)
 
         self._client: Client = client
@@ -69,28 +82,44 @@ class MultipleChoice(Dialog):
         return config_embed
 
     @property
-    def embed(self):
+    def embed(self) -> discord.Embed:
+        """ The generated embed. """
+
         if self._embed is None:
             self._generate_embed()
 
         return self._embed
 
     @property
-    def choice(self):
+    def choice(self) -> str:
+        """ The option that the user chose. """
+
         return self._choice
 
-    async def run(self, users: List[User], channel: TextChannel = None, **kwargs) -> Tuple[Optional[str], Message]:
+    async def run(self, users: Union[User, List[User]] = None, channel: TextChannel = None, **kwargs) \
+            -> Tuple[Optional[str], Message]:
         """
         Run the multiple choice dialog.
 
-        :param users: list of :class:`discord.User` that can use the reactions
-        :param channel: Optional: The channel to send the message to.
-        :param kwargs: Optional: message`discord.Message`, timeout`int` seconds (default: 60),
-        closable`bool` (default: True)
+        :param users: Users that can use the reactions (default: `None`).
+            If this is ``None``: Any user can interact.
 
-        :rtype: tuple[str, discord.Message]
-        :return: selected option and used message`discord.Message`
+        :type users: list[:class:`discord.User`]
+
+        :param channel: The channel to send the message to.
+        :type channel: :class:`discord.TextChannel`, optional
+
+        :param kwargs:
+            - message :class:`discord.Message`
+            - timeout :class:`int` (seconds, default: ``60``),
+            - closable :class:`bool` (default: ``True``)
+
+        :return: selected option and used :class:`discord.Message`
+        :rtype: tuple[:class:`str`, :class:`discord.Message`]
         """
+
+        if type(users) == User:
+            users = [users]
 
         self._parse_kwargs(**kwargs)
         timeout = kwargs.get("timeout", 60)
@@ -113,8 +142,17 @@ class MultipleChoice(Dialog):
             await self.message.add_reaction(self.close_emoji)
 
         def check(r, u):
-            res = (r.message.id == self.message.id) and (u.id in [_u.id for _u in users]) and (
-                        r.emoji in self._emojis or r.emoji == self.close_emoji)
+            res = (r.message.id == self.message.id) and u.id != self._client.user.id
+
+            if users is not None:
+                res = res and (u.id in [_u.id for _u in users])
+
+            is_valid_emoji = r.emoji in self._emojis
+            if closable:
+                is_valid_emoji = is_valid_emoji or r.emoji == self.close_emoji
+
+            res = res and is_valid_emoji
+
             return res
 
         try:
@@ -123,7 +161,7 @@ class MultipleChoice(Dialog):
             self._choice = None
             return None, self.message
 
-        if closable and reaction.emoji == self.close_emoji:
+        if reaction.emoji == self.close_emoji:
             self._choice = None
             return None, self.message
 
@@ -134,16 +172,15 @@ class MultipleChoice(Dialog):
 
 
 class BotMultipleChoice(MultipleChoice):
+    """ Same as :class:`MultipleChoice`, except for the discord.py commands extension. """
+
     def __init__(self, ctx: Context, options: list, title: str, description: str = "", **kwargs):
         super().__init__(ctx.bot, options, title, description, **kwargs)
 
         self._ctx = ctx
 
-    async def run(self, users: List[User] = None, channel: TextChannel = None, **kwargs)\
+    async def run(self, users: Union[User, List[User]] = None, channel: TextChannel = None, **kwargs)\
             -> Tuple[Optional[str], Message]:
-
-        if users is None:
-            users = [self._ctx.author]
 
         if self.message is None and channel is None:
             channel = self._ctx.channel
