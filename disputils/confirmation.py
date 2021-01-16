@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import asyncio
 from .abc import Dialog
+from typing import Optional
 
 
 class Confirmation(Dialog):
@@ -15,21 +16,30 @@ class Confirmation(Dialog):
         self.emojis = {"✅": True, "❌": False}
         self._confirmed = None
         self.message = message
-        self._embed: discord.Embed = None
+        self._embed: Optional[discord.Embed] = None
 
     @property
-    def confirmed(self):
+    def confirmed(self) -> bool:
+        """ Whether the user has confirmed the action. """
+
         return self._confirmed
 
     async def confirm(self, text: str, user: discord.User, channel: discord.TextChannel = None)\
             -> bool or None:
         """
-
+        Run the confirmation.
 
         :param text: The confirmation text.
+        :type text: :class:`str`
+
         :param user: The user who has to confirm.
-        :param channel: The channel the message will be sent to. Must only be specified if `self.message` is None.
+        :type user: :class:`discord.User`
+
+        :param channel: The channel the message will be sent to. Must only be specified if ``self.message`` is None.
+        :type channel: :class:`discord.TextChannel`, optional
+
         :return: True when it's been confirmed, otherwise False. Will return None when a timeout occurs.
+        :rtype: :class:`bool`, optional
         """
 
         emb = discord.Embed(
@@ -64,7 +74,10 @@ class Confirmation(Dialog):
             self._confirmed = None
             return
         finally:
-            await msg.clear_reactions()
+            try:
+                await msg.clear_reactions()
+            except discord.Forbidden:
+                pass
 
         confirmed = self.emojis[reaction.emoji]
 
