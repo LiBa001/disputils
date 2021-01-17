@@ -9,16 +9,23 @@ from .abc import Dialog
 class EmbedPaginator(Dialog):
     """ Represents an interactive menu containing multiple embeds. """
 
-
-    def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None, *,
-                control_emojis: Tuple[str, str, str, str, str] = None):
+    def __init__(
+        self,
+        client: discord.Client,
+        pages: [discord.Embed],
+        message: discord.Message = None,
+        *,
+        control_emojis: Tuple[str, str, str, str, str] = None,
+    ):
         """
         Initialize a new EmbedPaginator.
 
         :param client: The :class:`discord.Client` to use.
         :param pages: A list of :class:`discord.Embed` to paginate through.
-        :param message: An optional :class:`discord.Message` to edit. Otherwise a new message will be sent.
-        :param control_emojis: An option :class:`typing.Tuple` of control emojis to use, otherwise the default will be used
+        :param message: An optional :class:`discord.Message` to edit.
+            Otherwise a new message will be sent.
+        :param control_emojis: An option :class:`typing.Tuple` of control emojis to use,
+            otherwise the default will be used
         """
         super().__init__()
 
@@ -26,7 +33,7 @@ class EmbedPaginator(Dialog):
         self.pages = pages
         self.message = message
 
-        self.control_emojis = control_emojis or ('⏮', '◀', '▶', '⏭', '⏹')
+        self.control_emojis = control_emojis or ("⏮", "◀", "▶", "⏭", "⏹")
 
     @property
     def formatted_pages(self) -> List[discord.Embed]:
@@ -37,11 +44,16 @@ class EmbedPaginator(Dialog):
             if page.footer.text == discord.Embed.Empty:
                 page.set_footer(text=f"({pages.index(page)+1}/{len(pages)})")
             else:
+                page_index = pages.index(page)
                 if page.footer.icon_url == discord.Embed.Empty:
-                    page.set_footer(text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
+                    page.set_footer(
+                        text=f"{page.footer.text} - ({page_index+1}/{len(pages)})"
+                    )
                 else:
-                    page.set_footer(icon_url=page.footer.icon_url,
-                                    text=f"{page.footer.text} - ({pages.index(page)+1}/{len(pages)})")
+                    page.set_footer(
+                        icon_url=page.footer.icon_url,
+                        text=f"{page.footer.text} - ({page_index+1}/{len(pages)})",
+                    )
         return pages
 
     async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
@@ -88,10 +100,13 @@ class EmbedPaginator(Dialog):
 
         while True:
             try:
-                reaction, user = await self._client.wait_for('reaction_add', check=check, timeout=100)
+                reaction, user = await self._client.wait_for(
+                    "reaction_add", check=check, timeout=100
+                )
             except asyncio.TimeoutError:
-                if not isinstance(channel, discord.channel.DMChannel) and \
-                        not isinstance(channel, discord.channel.GroupChannel):
+                if not isinstance(
+                    channel, discord.channel.DMChannel
+                ) and not isinstance(channel, discord.channel.GroupChannel):
                     try:
                         await self.message.clear_reactions()
                     except discord.Forbidden:
@@ -105,10 +120,18 @@ class EmbedPaginator(Dialog):
                 load_page_index = 0
 
             elif emoji == self.control_emojis[1]:
-                load_page_index = current_page_index - 1 if current_page_index > 0 else current_page_index
+                load_page_index = (
+                    current_page_index - 1
+                    if current_page_index > 0
+                    else current_page_index
+                )
 
             elif emoji == self.control_emojis[2]:
-                load_page_index = current_page_index + 1 if current_page_index < max_index else current_page_index
+                load_page_index = (
+                    current_page_index + 1
+                    if current_page_index < max_index
+                    else current_page_index
+                )
 
             elif emoji == self.control_emojis[3]:
                 load_page_index = max_index
@@ -118,8 +141,9 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.message.edit(embed=self.formatted_pages[load_page_index])
-            if not isinstance(channel, discord.channel.DMChannel) and \
-                    not isinstance(channel, discord.channel.GroupChannel):
+            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(
+                channel, discord.channel.GroupChannel
+            ):
                 try:
                     await self.message.remove_reaction(reaction, user)
                 except discord.Forbidden:
@@ -130,8 +154,8 @@ class EmbedPaginator(Dialog):
     @staticmethod
     def generate_sub_lists(origin_list: list, max_len: int = 25) -> List[list]:
         """
-        Takes a list of elements and transforms it into a list of sub-lists of those elements
-        with each sublist containing max. ``max_len`` elements.
+        Takes a list of elements and transforms it into a list of sub-lists of those
+        elements with each sublist containing max. ``max_len`` elements.
 
         This can be used to easily split content for embed-fields across multiple pages.
 
@@ -168,20 +192,31 @@ class EmbedPaginator(Dialog):
 
 
 class BotEmbedPaginator(EmbedPaginator):
-    def __init__(self, ctx: commands.Context, pages: [discord.Embed], message: discord.Message = None, *,
-                 control_emojis: Tuple[str, str, str, str, str] = None):
+    def __init__(
+        self,
+        ctx: commands.Context,
+        pages: [discord.Embed],
+        message: discord.Message = None,
+        *,
+        control_emojis: Tuple[str, str, str, str, str] = None,
+    ):
         """
         Initialize a new EmbedPaginator.
 
         :param ctx: The :class:`discord.ext.commands.Context` to use.
         :param pages: A list of :class:`discord.Embed` to paginate through.
-        :param message: An optional :class:`discord.Message` to edit. Otherwise a new message will be sent.
+        :param message: An optional :class:`discord.Message` to edit.
+            Otherwise a new message will be sent.
         """
         self._ctx = ctx
 
-        super(BotEmbedPaginator, self).__init__(ctx.bot, pages, message, control_emojis=control_emojis)
+        super(BotEmbedPaginator, self).__init__(
+            ctx.bot, pages, message, control_emojis=control_emojis
+        )
 
-    async def run(self, channel: discord.TextChannel = None, users: List[discord.User] = None):
+    async def run(
+        self, channel: discord.TextChannel = None, users: List[discord.User] = None
+    ):
         """
         Runs the paginator.
 
