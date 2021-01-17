@@ -8,7 +8,12 @@ from typing import Optional
 class Confirmation(Dialog):
     """ Represents a message to let the user confirm a specific action. """
 
-    def __init__(self, client: discord.Client, color: hex = 0x000000, message: discord.Message = None):
+    def __init__(
+        self,
+        client: discord.Client,
+        color: hex = 0x000000,
+        message: discord.Message = None,
+    ):
         super().__init__(color=color)
 
         self._client = client
@@ -24,8 +29,9 @@ class Confirmation(Dialog):
 
         return self._confirmed
 
-    async def confirm(self, text: str, user: discord.User, channel: discord.TextChannel = None)\
-            -> bool or None:
+    async def confirm(
+        self, text: str, user: discord.User, channel: discord.TextChannel = None
+    ) -> bool or None:
         """
         Run the confirmation.
 
@@ -35,21 +41,17 @@ class Confirmation(Dialog):
         :param user: The user who has to confirm.
         :type user: :class:`discord.User`
 
-        :param channel: The channel the message will be sent to. Must only be specified if ``self.message`` is None.
+        :param channel: The channel the message will be sent to. Must only be specified
+            if ``self.message`` is None.
         :type channel: :class:`discord.TextChannel`, optional
 
-        :return: True when it's been confirmed, otherwise False. Will return None when a timeout occurs.
+        :return: True when it's been confirmed, otherwise False. Will return None when a
+            timeout occurs.
         :rtype: :class:`bool`, optional
         """
 
-        emb = discord.Embed(
-            title=text,
-            color=self.color
-        )
-        emb.set_author(
-            name=str(user),
-            icon_url=user.avatar_url
-        )
+        emb = discord.Embed(title=text, color=self.color)
+        emb.set_author(name=str(user), icon_url=user.avatar_url)
 
         self._embed = emb
 
@@ -66,9 +68,11 @@ class Confirmation(Dialog):
 
         try:
             reaction, user = await self._client.wait_for(
-                'reaction_add',
-                check=lambda r, u: (r.message.id == msg.id) and (u.id == user.id) and (r.emoji in self.emojis),
-                timeout=20
+                "reaction_add",
+                check=lambda r, u: (r.message.id == msg.id)
+                and (u.id == user.id)
+                and (r.emoji in self.emojis),
+                timeout=20,
             )
         except asyncio.TimeoutError:
             self._confirmed = None
@@ -86,13 +90,19 @@ class Confirmation(Dialog):
 
 
 class BotConfirmation(Confirmation):
-    def __init__(self, ctx: commands.Context, color: hex = 0x000000, message: discord.Message = None):
+    def __init__(
+        self,
+        ctx: commands.Context,
+        color: hex = 0x000000,
+        message: discord.Message = None,
+    ):
         self._ctx = ctx
 
         super().__init__(ctx.bot, color, message)
 
-    async def confirm(self, text: str, user: discord.User = None, channel: discord.TextChannel = None) \
-            -> bool or None:
+    async def confirm(
+        self, text: str, user: discord.User = None, channel: discord.TextChannel = None
+    ) -> bool or None:
 
         if user is None:
             user = self._ctx.author
