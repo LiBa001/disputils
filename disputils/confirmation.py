@@ -30,7 +30,11 @@ class Confirmation(Dialog):
         return self._confirmed
 
     async def confirm(
-        self, text: str, user: discord.User, channel: discord.TextChannel = None
+        self,
+        text: str,
+        user: discord.User,
+        channel: discord.TextChannel = None,
+        hide_author: bool = False,
     ) -> bool or None:
         """
         Run the confirmation.
@@ -45,13 +49,17 @@ class Confirmation(Dialog):
             if ``self.message`` is None.
         :type channel: :class:`discord.TextChannel`, optional
 
+        :param hide_author: Whether or not the ``user`` should be set as embed author.
+        :type hide_author: bool, optional
+
         :return: True when it's been confirmed, otherwise False. Will return None when a
             timeout occurs.
         :rtype: :class:`bool`, optional
         """
 
         emb = discord.Embed(title=text, color=self.color)
-        emb.set_author(name=str(user), icon_url=user.avatar_url)
+        if not hide_author:
+            emb.set_author(name=str(user), icon_url=user.avatar_url)
 
         self._embed = emb
 
@@ -101,7 +109,11 @@ class BotConfirmation(Confirmation):
         super().__init__(ctx.bot, color, message)
 
     async def confirm(
-        self, text: str, user: discord.User = None, channel: discord.TextChannel = None
+        self,
+        text: str,
+        user: discord.User = None,
+        channel: discord.TextChannel = None,
+        hide_author: bool = False,
     ) -> bool or None:
 
         if user is None:
@@ -110,4 +122,4 @@ class BotConfirmation(Confirmation):
         if self.message is None and channel is None:
             channel = self._ctx.channel
 
-        return await super().confirm(text, user, channel)
+        return await super().confirm(text, user, channel, hide_author=hide_author)
