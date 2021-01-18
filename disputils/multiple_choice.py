@@ -29,8 +29,8 @@ class MultipleChoice(Dialog):
         options: List[str],
         title: str,
         description: str = "",
-        footer_text: Optional[str] = None,
-        footer_icon: Optional[str] = None,
+        footer_text: str = "",
+        footer_icon: str = "",
         timestamp: Optional[datetime] = None,
         **kwargs
     ):
@@ -40,9 +40,9 @@ class MultipleChoice(Dialog):
         self.options: List[str] = options
         self.title: str = title
         self.description: str = description
-        self.footer_text = footer_text
-        self.footer_icon = footer_icon
-        self.embed_timestamp = timestamp
+        self.footer_text: str = footer_text
+        self.footer_icon: str = footer_icon
+        self.embed_timestamp: Optional[datetime] = timestamp
 
         self.message: Optional[Message] = None
         self._parse_kwargs(**kwargs)
