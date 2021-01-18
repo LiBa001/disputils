@@ -33,7 +33,8 @@ class Dialog(ABC):
 
         :param text: The new text.
         :param color: The new embed color.
-        :param hide_author: True if you want to hide the embed author (default: ``False``).
+        :param hide_author: True if you want to hide the embed author
+            (default: ``False``).
         :rtype: ``None``
         """
 

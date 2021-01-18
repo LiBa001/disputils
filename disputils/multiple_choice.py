@@ -9,7 +9,8 @@ from datetime import datetime
 
 class MultipleChoice(Dialog):
     """
-    Generate and manage a reaction controlled rich embed multiple choice poll in Discord.
+    Generate and manage a reaction controlled rich embed multiple choice poll in
+    Discord.
 
     :param title: Embed title.
     :type title: :class:`str`
@@ -17,11 +18,22 @@ class MultipleChoice(Dialog):
     :param description: Embed description.
     :type description: :class:`str`
 
-    :param options: Options to choose from. Each option is going to be a separate embed field.
+    :param options: Options to choose from. Each option is going to be a separate embed
+        field.
     :type options: list[:class:`str`]
     """
 
-    def __init__(self, client: Client, options: List[str], title: str, description: str = "", footer_text: Optional[str] = None, footer_icon: Optional[str] = None, timestamp: Optional[datetime] = None, **kwargs):
+    def __init__(
+        self,
+        client: Client,
+        options: List[str],
+        title: str,
+        description: str = "",
+        footer_text: Optional[str] = None,
+        footer_icon: Optional[str] = None,
+        timestamp: Optional[datetime] = None,
+        **kwargs
+    ):
         super().__init__(**kwargs)
 
         self._client: Client = client
@@ -38,12 +50,14 @@ class MultipleChoice(Dialog):
         self._embed: Optional[discord.Embed] = None
         self._emojis: List[str] = []
 
-        self.close_emoji = '❌'
+        self.close_emoji = "❌"
 
         self._choice = None
 
     def _parse_kwargs(self, **kwargs):
-        self.message: Message = kwargs.get("message") or kwargs.get("msg") or self.message
+        self.message: Message = (
+            kwargs.get("message") or kwargs.get("msg") or self.message
+        )
 
     def _generate_emojis(self) -> List[str]:
         self._emojis.clear()
@@ -51,16 +65,16 @@ class MultipleChoice(Dialog):
         if len(self.options) > 10:
             for i in range(len(self.options)):  # generates unicode emojis [A,B,C,…]
                 hex_str = hex(224 + (6 + i))[2:]
-                emoji = b'\\U0001f1a'.replace(b'a', bytes(hex_str, "utf-8"))
+                emoji = b"\\U0001f1a".replace(b"a", bytes(hex_str, "utf-8"))
                 emoji = emoji.decode("unicode-escape")
                 self._emojis.append(emoji)
 
         else:
             for i in range(len(self.options)):  # generates unicode emojis [1,2,3,…]
                 if i < 9:
-                    emoji = 'x\u20e3'.replace('x', str(i + 1))
+                    emoji = "x\u20e3".replace("x", str(i + 1))
                 else:
-                    emoji = '\U0001f51f'
+                    emoji = "\U0001f51f"
 
                 self._emojis.append(emoji)
 
@@ -68,9 +82,7 @@ class MultipleChoice(Dialog):
 
     def _generate_embed(self) -> discord.Embed:
         config_embed = discord.Embed(
-            title=self.title,
-            description=self.description,
-            color=self.color
+            title=self.title, description=self.description, color=self.color
         )
         if self.footer_text:
             config_embed.set_footer(text=self.footer_text, icon_url=self.footer_icon)
@@ -80,11 +92,7 @@ class MultipleChoice(Dialog):
         emojis = self._generate_emojis()
 
         for i in range(len(self.options)):
-            config_embed.add_field(
-                name=emojis[i],
-                value=self.options[i],
-                inline=False
-            )
+            config_embed.add_field(name=emojis[i], value=self.options[i], inline=False)
 
         self._embed = config_embed
         return config_embed
@@ -104,8 +112,12 @@ class MultipleChoice(Dialog):
 
         return self._choice
 
-    async def run(self, users: Union[User, List[User]] = None, channel: TextChannel = None, **kwargs) \
-            -> Tuple[Optional[str], Message]:
+    async def run(
+        self,
+        users: Union[User, List[User]] = None,
+        channel: TextChannel = None,
+        **kwargs
+    ) -> Tuple[Optional[str], Message]:
         """
         Run the multiple choice dialog.
 
@@ -141,7 +153,10 @@ class MultipleChoice(Dialog):
             await self.message.clear_reactions()
             await self.message.edit(content=self.message.content, embed=config_embed)
         else:
-            raise TypeError("Missing argument. You need to specify either 'channel' or 'message' as a target.")
+            raise TypeError(
+                "Missing argument. "
+                + "You need to specify either 'channel' or 'message' as a target."
+            )
 
         for emoji in self._emojis:
             await self.message.add_reaction(emoji)
@@ -164,7 +179,9 @@ class MultipleChoice(Dialog):
             return res
 
         try:
-            reaction, user = await self._client.wait_for('reaction_add', check=check, timeout=timeout)
+            reaction, user = await self._client.wait_for(
+                "reaction_add", check=check, timeout=timeout
+            )
         except asyncio.TimeoutError:
             self._choice = None
             return None, self.message
@@ -180,15 +197,23 @@ class MultipleChoice(Dialog):
 
 
 class BotMultipleChoice(MultipleChoice):
-    """ Same as :class:`MultipleChoice`, except for the discord.py commands extension. """
+    """
+    Same as :class:`MultipleChoice`, except for the discord.py commands extension.
+    """
 
-    def __init__(self, ctx: Context, options: list, title: str, description: str = "", **kwargs):
+    def __init__(
+        self, ctx: Context, options: list, title: str, description: str = "", **kwargs
+    ):
         super().__init__(ctx.bot, options, title, description, **kwargs)
 
         self._ctx = ctx
 
-    async def run(self, users: Union[User, List[User]] = None, channel: TextChannel = None, **kwargs)\
-            -> Tuple[Optional[str], Message]:
+    async def run(
+        self,
+        users: Union[User, List[User]] = None,
+        channel: TextChannel = None,
+        **kwargs
+    ) -> Tuple[Optional[str], Message]:
 
         if self.message is None and channel is None:
             channel = self._ctx.channel
