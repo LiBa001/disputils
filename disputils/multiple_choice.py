@@ -134,7 +134,7 @@ class MultipleChoice(Dialog):
         timeout = kwargs.get("timeout", 60)
         closable: bool = kwargs.get("closable", True)
 
-        config_embed = self._generate_embed()
+        config_embed = self.embed
 
         if channel is not None:
             self.message = await channel.send(embed=config_embed)
