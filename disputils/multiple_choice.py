@@ -4,6 +4,7 @@ from discord.ext.commands import Context
 import asyncio
 from typing import Tuple, List, Optional, Union
 from .abc import Dialog
+from datetime import datetime
 
 
 class MultipleChoice(Dialog):
@@ -20,7 +21,7 @@ class MultipleChoice(Dialog):
     :type options: list[:class:`str`]
     """
 
-    def __init__(self, client: Client, options: List[str], title: str, description: str = "", footer_text = None, footer_icon = None, timestamp = None, **kwargs):
+    def __init__(self, client: Client, options: List[str], title: str, description: str = "", footer_text: Optional[str] = None, footer_icon: Optional[str] = None, timestamp: Optional[datetime] = None, **kwargs):
         super().__init__(**kwargs)
 
         self._client: Client = client
