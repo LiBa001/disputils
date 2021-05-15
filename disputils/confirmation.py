@@ -59,7 +59,7 @@ class Confirmation(Dialog):
 
         emb = discord.Embed(title=text, color=self.color)
         if not hide_author:
-            emb.set_author(name=str(user), icon_url=user.avatar_url)
+            emb.set_author(name=str(user), icon_url=user.avatar.url)
 
         self._embed = emb
 
