@@ -56,7 +56,7 @@ class EmbedPaginator(Dialog):
                     )
         return pages
 
-    async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
+    async def run(self, users: List[discord.User], channel: discord.TextChannel = None, timeout = 100):
         """
         Runs the paginator.
 
@@ -101,7 +101,7 @@ class EmbedPaginator(Dialog):
         while True:
             try:
                 reaction, user = await self._client.wait_for(
-                    "reaction_add", check=check, timeout=100
+                    "reaction_add", check=check, timeout=timeout
                 )
             except asyncio.TimeoutError:
                 if not isinstance(
