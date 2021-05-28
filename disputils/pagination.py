@@ -56,7 +56,12 @@ class EmbedPaginator(Dialog):
                     )
         return pages
 
-    async def run(self, users: List[discord.User], channel: discord.TextChannel = None, timeout: int = 100):
+    async def run(
+        self,
+        users: List[discord.User],
+        channel: discord.TextChannel = None,
+        timeout: int = 100,
+    ):
         """
         Runs the paginator.
 
@@ -69,6 +74,10 @@ class EmbedPaginator(Dialog):
         :param channel:
             The text channel to send the embed to.
             Must only be specified if `self.message` is `None`.
+
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
 
         :return: None
         """
@@ -215,7 +224,10 @@ class BotEmbedPaginator(EmbedPaginator):
         )
 
     async def run(
-        self, channel: discord.TextChannel = None, users: List[discord.User] = None, timeout: int = 100
+        self,
+        channel: discord.TextChannel = None,
+        users: List[discord.User] = None,
+        timeout: int = 100,
     ):
         """
         Runs the paginator.
@@ -230,6 +242,10 @@ class BotEmbedPaginator(EmbedPaginator):
             A list of :class:`discord.User` that can control the pagination.
             Default is the context author.
             Passing an empty list will grant access to all users. (Not recommended.)
+
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
 
         :return: None
         """
