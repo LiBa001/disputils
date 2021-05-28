@@ -56,7 +56,7 @@ class EmbedPaginator(Dialog):
                     )
         return pages
 
-    async def run(self, users: List[discord.User], channel: discord.TextChannel = None, timeout = 100):
+    async def run(self, users: List[discord.User], channel: discord.TextChannel = None, timeout: int = 100):
         """
         Runs the paginator.
 
@@ -215,7 +215,7 @@ class BotEmbedPaginator(EmbedPaginator):
         )
 
     async def run(
-        self, channel: discord.TextChannel = None, users: List[discord.User] = None
+        self, channel: discord.TextChannel = None, users: List[discord.User] = None, timeout: int = 100
     ):
         """
         Runs the paginator.
@@ -240,4 +240,4 @@ class BotEmbedPaginator(EmbedPaginator):
         if self.message is None and channel is None:
             channel = self._ctx.channel
 
-        await super().run(users, channel)
+        await super().run(users, channel, timeout)
