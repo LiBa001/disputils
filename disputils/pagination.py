@@ -15,7 +15,17 @@ ControlEmojis = namedtuple(
 
 
 class EmbedPaginator(Dialog):
-    """ Represents an interactive menu containing multiple embeds. """
+    """
+    Represents an interactive menu containing multiple embeds.
+
+    :param client: The :class:`discord.Client` to use.
+    :param pages: A list of :class:`discord.Embed` to paginate through.
+    :param message: An optional :class:`discord.Message` to edit.
+        Otherwise a new message will be sent.
+    :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
+        containing control emojis to use, otherwise the default will be used.
+        A value of `None` causes a reaction to be left out.
+    """
 
     def __init__(
         self,
@@ -25,17 +35,6 @@ class EmbedPaginator(Dialog):
         *,
         control_emojis: Union[ControlEmojis, tuple, list] = ControlEmojis(),
     ):
-        """
-        Initialize a new EmbedPaginator.
-
-        :param client: The :class:`discord.Client` to use.
-        :param pages: A list of :class:`discord.Embed` to paginate through.
-        :param message: An optional :class:`discord.Message` to edit.
-            Otherwise a new message will be sent.
-        :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
-            containing control emojis to use, otherwise the default will be used.
-            A value of `None` causes a reaction to be left out.
-        """
         super().__init__()
 
         self._client = client
@@ -239,6 +238,18 @@ class EmbedPaginator(Dialog):
 
 
 class BotEmbedPaginator(EmbedPaginator):
+    """
+    Same as :class:`EmbedPaginator`, except for the discord.py commands extension.
+
+    :param ctx: The :class:`discord.ext.commands.Context` to use.
+    :param pages: A list of :class:`discord.Embed` to paginate through.
+    :param message: An optional :class:`discord.Message` to edit.
+        Otherwise a new message will be sent.
+    :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
+        containing control emojis to use, otherwise the default will be used.
+        A value of `None` causes a reaction to be left out.
+    """
+
     def __init__(
         self,
         ctx: commands.Context,
@@ -247,17 +258,6 @@ class BotEmbedPaginator(EmbedPaginator):
         *,
         control_emojis: Union[ControlEmojis, tuple, list] = ControlEmojis(),
     ):
-        """
-        Initialize a new EmbedPaginator.
-
-        :param ctx: The :class:`discord.ext.commands.Context` to use.
-        :param pages: A list of :class:`discord.Embed` to paginate through.
-        :param message: An optional :class:`discord.Message` to edit.
-            Otherwise a new message will be sent.
-        :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
-            containing control emojis to use, otherwise the default will be used.
-            A value of `None` causes a reaction to be left out.
-        """
         self._ctx = ctx
 
         super(BotEmbedPaginator, self).__init__(
