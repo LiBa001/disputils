@@ -149,23 +149,25 @@ class MultipleChoice(Dialog):
         if closable:
             await self.message.add_reaction(self.close_emoji)
 
-        def check(r, u):
-            res = (r.message.id == self.message.id) and u.id != self._client.user.id
+        def check(r: discord.RawReactionActionEvent):
+            res = (
+                r.message_id == self.message.id
+            ) and r.user_id != self._client.user.id
 
             if users is not None:
-                res = res and (u.id in [_u.id for _u in users])
+                res = res and (r.user_id in [_u.id for _u in users])
 
-            is_valid_emoji = r.emoji in self._emojis
+            is_valid_emoji = str(r.emoji) in self._emojis
             if closable:
-                is_valid_emoji = is_valid_emoji or r.emoji == self.close_emoji
+                is_valid_emoji = is_valid_emoji or str(r.emoji) == self.close_emoji
 
             res = res and is_valid_emoji
 
             return res
 
         try:
-            reaction, user = await self._client.wait_for(
-                "reaction_add", check=check, timeout=timeout
+            reaction = await self._client.wait_for(
+                "raw_reaction_add", check=check, timeout=timeout
             )
         except asyncio.TimeoutError:
             self._choice = None
@@ -173,13 +175,13 @@ class MultipleChoice(Dialog):
                 await self.quit(kwargs["timeout_msg"])
             return None, self.message
 
-        if reaction.emoji == self.close_emoji:
+        if str(reaction.emoji) == self.close_emoji:
             self._choice = None
             if "quit_msg" in kwargs:
                 await self.quit(kwargs["quit_msg"])
             return None, self.message
 
-        index = self._emojis.index(reaction.emoji)
+        index = self._emojis.index(str(reaction.emoji))
         self._choice = self.options[index]
 
         return self._choice, self.message

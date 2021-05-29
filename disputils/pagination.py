@@ -103,18 +103,20 @@ class EmbedPaginator(Dialog):
         for emoji in self.control_emojis:
             await self.message.add_reaction(emoji)
 
-        def check(r: discord.Reaction, u: discord.User):
-            res = (r.message.id == self.message.id) and (r.emoji in self.control_emojis)
+        def check(r: discord.RawReactionActionEvent):
+            res = (r.message_id == self.message.id) and (
+                str(r.emoji) in self.control_emojis
+            )
 
             if len(users) > 0:
-                res = res and u.id in [u1.id for u1 in users]
+                res = res and r.user_id in [u1.id for u1 in users]
 
             return res
 
         while True:
             try:
-                reaction, user = await self._client.wait_for(
-                    "reaction_add", check=check, timeout=timeout
+                reaction = await self._client.wait_for(
+                    "raw_reaction_add", check=check, timeout=timeout
                 )
             except asyncio.TimeoutError:
                 if not isinstance(
@@ -128,7 +130,7 @@ class EmbedPaginator(Dialog):
                     await self.display(kwargs["timeout_msg"])
                 return
 
-            emoji = reaction.emoji
+            emoji = str(reaction.emoji)
             max_index = len(self.pages) - 1  # index for the last page
 
             if emoji == self.control_emojis[0]:
@@ -156,11 +158,9 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.display(text, self.formatted_pages[load_page_index])
-            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(
-                channel, discord.channel.GroupChannel
-            ):
+            if reaction.member:
                 try:
-                    await self.message.remove_reaction(reaction, user)
+                    await self.message.remove_reaction(emoji, reaction.member)
                 except discord.Forbidden:
                     pass
 

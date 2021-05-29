@@ -75,18 +75,18 @@ class Confirmation(Dialog):
             await msg.add_reaction(emoji)
 
         try:
-            reaction, user = await self._client.wait_for(
-                "reaction_add",
-                check=lambda r, u: (r.message.id == msg.id)
-                and (u.id == user.id)
-                and (r.emoji in self.emojis),
+            reaction = await self._client.wait_for(
+                "raw_reaction_add",
+                check=lambda r: (r.message_id == msg.id)
+                and (r.user_id == user.id)
+                and (str(r.emoji) in self.emojis),
                 timeout=timeout,
             )
         except asyncio.TimeoutError:
             self._confirmed = None
             return
         else:
-            self._confirmed = self.emojis[reaction.emoji]
+            self._confirmed = self.emojis[str(reaction.emoji)]
             return self._confirmed
         finally:
             try:
