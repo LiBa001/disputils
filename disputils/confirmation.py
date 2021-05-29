@@ -35,6 +35,7 @@ class Confirmation(Dialog):
         user: discord.User,
         channel: discord.TextChannel = None,
         hide_author: bool = False,
+        timeout: int = 20
     ) -> bool or None:
         """
         Run the confirmation.
@@ -51,6 +52,10 @@ class Confirmation(Dialog):
 
         :param hide_author: Whether or not the ``user`` should be set as embed author.
         :type hide_author: bool, optional
+
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
 
         :return: True when it's been confirmed, otherwise False. Will return None when a
             timeout occurs.
@@ -80,7 +85,7 @@ class Confirmation(Dialog):
                 check=lambda r, u: (r.message.id == msg.id)
                 and (u.id == user.id)
                 and (r.emoji in self.emojis),
-                timeout=20,
+                timeout=timeout,
             )
         except asyncio.TimeoutError:
             self._confirmed = None
@@ -114,6 +119,7 @@ class BotConfirmation(Confirmation):
         user: discord.User = None,
         channel: discord.TextChannel = None,
         hide_author: bool = False,
+        timeout: int = 20
     ) -> bool or None:
 
         if user is None:
@@ -122,4 +128,4 @@ class BotConfirmation(Confirmation):
         if self.message is None and channel is None:
             channel = self._ctx.channel
 
-        return await super().confirm(text, user, channel, hide_author=hide_author)
+        return await super().confirm(text, user, channel, hide_author, timeout)

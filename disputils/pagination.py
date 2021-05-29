@@ -56,7 +56,12 @@ class EmbedPaginator(Dialog):
                     )
         return pages
 
-    async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
+    async def run(
+        self,
+        users: List[discord.User],
+        channel: discord.TextChannel = None,
+        timeout: int = 100,
+    ):
         """
         Runs the paginator.
 
@@ -69,6 +74,10 @@ class EmbedPaginator(Dialog):
         :param channel:
             The text channel to send the embed to.
             Must only be specified if `self.message` is `None`.
+
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
 
         :return: None
         """
@@ -101,7 +110,7 @@ class EmbedPaginator(Dialog):
         while True:
             try:
                 reaction, user = await self._client.wait_for(
-                    "reaction_add", check=check, timeout=100
+                    "reaction_add", check=check, timeout=timeout
                 )
             except asyncio.TimeoutError:
                 if not isinstance(
@@ -215,7 +224,10 @@ class BotEmbedPaginator(EmbedPaginator):
         )
 
     async def run(
-        self, channel: discord.TextChannel = None, users: List[discord.User] = None
+        self,
+        channel: discord.TextChannel = None,
+        users: List[discord.User] = None,
+        timeout: int = 100,
     ):
         """
         Runs the paginator.
@@ -231,6 +243,10 @@ class BotEmbedPaginator(EmbedPaginator):
             Default is the context author.
             Passing an empty list will grant access to all users. (Not recommended.)
 
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
+
         :return: None
         """
 
@@ -240,4 +256,4 @@ class BotEmbedPaginator(EmbedPaginator):
         if self.message is None and channel is None:
             channel = self._ctx.channel
 
-        await super().run(users, channel)
+        await super().run(users, channel, timeout)
