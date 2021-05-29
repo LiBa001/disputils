@@ -2,8 +2,16 @@ import discord
 from discord.ext import commands
 import asyncio
 from copy import deepcopy
-from typing import List, Tuple
+from typing import List, Union
+from collections import namedtuple
 from .abc import Dialog
+
+
+ControlEmojis = namedtuple(
+    "ControlEmojis",
+    ("first", "previous", "next", "last", "close"),
+    defaults=("⏮", "◀", "▶", "⏭", "⏹"),
+)
 
 
 class EmbedPaginator(Dialog):
@@ -15,7 +23,7 @@ class EmbedPaginator(Dialog):
         pages: [discord.Embed],
         message: discord.Message = None,
         *,
-        control_emojis: Tuple[str, str, str, str, str] = None,
+        control_emojis: Union[ControlEmojis, tuple, list] = ControlEmojis(),
     ):
         """
         Initialize a new EmbedPaginator.
@@ -24,8 +32,9 @@ class EmbedPaginator(Dialog):
         :param pages: A list of :class:`discord.Embed` to paginate through.
         :param message: An optional :class:`discord.Message` to edit.
             Otherwise a new message will be sent.
-        :param control_emojis: An option :class:`typing.Tuple` of control emojis to use,
-            otherwise the default will be used
+        :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
+            containing control emojis to use, otherwise the default will be used.
+            A value of `None` causes a reaction to be left out.
         """
         super().__init__()
 
@@ -33,7 +42,29 @@ class EmbedPaginator(Dialog):
         self.pages = pages
         self.message = message
 
-        self.control_emojis = control_emojis or ("⏮", "◀", "▶", "⏭", "⏹")
+        if isinstance(control_emojis, ControlEmojis):
+            self.control_emojis = control_emojis
+        else:
+            control_emojis = tuple(control_emojis)
+            if len(control_emojis) == 1:
+                self.control_emojis = ControlEmojis(
+                    None, None, None, None, control_emojis[0]
+                )
+            elif len(control_emojis) == 2:
+                self.control_emojis = ControlEmojis(
+                    None, control_emojis[0], control_emojis[1], None, None
+                )
+            elif len(control_emojis) == 3:
+                self.control_emojis = ControlEmojis(
+                    None,
+                    control_emojis[0],
+                    control_emojis[1],
+                    None,
+                    control_emojis[2],
+                )
+            else:
+                control_emojis += (None,) * (5 - len(control_emojis))
+                self.control_emojis = ControlEmojis(*control_emojis)
 
     @property
     def formatted_pages(self) -> List[discord.Embed]:
@@ -101,7 +132,8 @@ class EmbedPaginator(Dialog):
         current_page_index = 0
 
         for emoji in self.control_emojis:
-            await self.message.add_reaction(emoji)
+            if emoji is not None:
+                await self.message.add_reaction(emoji)
 
         def check(r: discord.RawReactionActionEvent):
             res = (r.message_id == self.message.id) and (
@@ -213,7 +245,7 @@ class BotEmbedPaginator(EmbedPaginator):
         pages: [discord.Embed],
         message: discord.Message = None,
         *,
-        control_emojis: Tuple[str, str, str, str, str] = None,
+        control_emojis: Union[ControlEmojis, tuple, list] = ControlEmojis(),
     ):
         """
         Initialize a new EmbedPaginator.
@@ -222,6 +254,9 @@ class BotEmbedPaginator(EmbedPaginator):
         :param pages: A list of :class:`discord.Embed` to paginate through.
         :param message: An optional :class:`discord.Message` to edit.
             Otherwise a new message will be sent.
+        :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
+            containing control emojis to use, otherwise the default will be used.
+            A value of `None` causes a reaction to be left out.
         """
         self._ctx = ctx
 
