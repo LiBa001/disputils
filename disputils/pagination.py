@@ -61,6 +61,7 @@ class EmbedPaginator(Dialog):
         users: List[discord.User],
         channel: discord.TextChannel = None,
         timeout: int = 100,
+        **kwargs,
     ):
         """
         Runs the paginator.
@@ -79,21 +80,24 @@ class EmbedPaginator(Dialog):
         :param timeout:
             Seconds to wait until stopping to listen for user interaction.
 
+        :param kwargs:
+            - text :class:`str`: Text to appear in the pagination message.
+            - timeout_msg :class:`str`: Text to appear when pagination times out.
+            - quit_msg :class:`str`: Text to appear when user quits the dialog.
+
         :return: None
         """
 
-        if channel is None and self.message is not None:
-            channel = self.message.channel
-        elif channel is None:
-            raise TypeError("Missing argument. You need to specify a target channel.")
-
         self._embed = self.pages[0]
+        text = kwargs.get("text")
 
         if len(self.pages) == 1:  # no pagination needed in this case
-            self.message = await channel.send(embed=self._embed)
+            await self._publish(channel, content=text, embed=self._embed)
             return
 
-        self.message = await channel.send(embed=self.formatted_pages[0])
+        channel = await self._publish(
+            channel, content=text, embed=self.formatted_pages[0]
+        )
         current_page_index = 0
 
         for emoji in self.control_emojis:
@@ -120,6 +124,8 @@ class EmbedPaginator(Dialog):
                         await self.message.clear_reactions()
                     except discord.Forbidden:
                         pass
+                if "timeout_msg" in kwargs:
+                    await self.display(kwargs["timeout_msg"])
                 return
 
             emoji = reaction.emoji
@@ -146,10 +152,10 @@ class EmbedPaginator(Dialog):
                 load_page_index = max_index
 
             else:
-                await self.message.delete()
+                await self.quit(kwargs.get("quit_msg"))
                 return
 
-            await self.message.edit(embed=self.formatted_pages[load_page_index])
+            await self.display(text, self.formatted_pages[load_page_index])
             if not isinstance(channel, discord.channel.DMChannel) and not isinstance(
                 channel, discord.channel.GroupChannel
             ):
@@ -228,6 +234,7 @@ class BotEmbedPaginator(EmbedPaginator):
         channel: discord.TextChannel = None,
         users: List[discord.User] = None,
         timeout: int = 100,
+        **kwargs,
     ):
         """
         Runs the paginator.
@@ -247,6 +254,11 @@ class BotEmbedPaginator(EmbedPaginator):
         :param timeout:
             Seconds to wait until stopping to listen for user interaction.
 
+        :param kwargs:
+            - text :class:`str`: Text to appear in the pagination message.
+            - timeout_msg :class:`str`: Text to appear when pagination times out.
+            - quit_msg :class:`str`: Text to appear when user quits the dialog.
+
         :return: None
         """
 
@@ -256,4 +268,4 @@ class BotEmbedPaginator(EmbedPaginator):
         if self.message is None and channel is None:
             channel = self._ctx.channel
 
-        await super().run(users, channel, timeout)
+        await super().run(users, channel, timeout, **kwargs)

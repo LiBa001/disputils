@@ -122,6 +122,9 @@ class MultipleChoice(Dialog):
             - message :class:`discord.Message`
             - timeout :class:`int` (seconds, default: ``60``),
             - closable :class:`bool` (default: ``True``)
+            - text :class:`str`: Text to appear in the message.
+            - timeout_msg :class:`str`: Text to appear when dialog times out.
+            - quit_msg :class:`str`: Text to appear when user quits the dialog.
 
         :return: selected option and used :class:`discord.Message`
         :rtype: tuple[:class:`str`, :class:`discord.Message`]
@@ -134,18 +137,11 @@ class MultipleChoice(Dialog):
         timeout = kwargs.get("timeout", 60)
         closable: bool = kwargs.get("closable", True)
 
-        config_embed = self.embed
+        publish_kwargs = {"embed": self.embed}
+        if "text" in kwargs:
+            publish_kwargs["content"] = kwargs["text"]
 
-        if channel is not None:
-            self.message = await channel.send(embed=config_embed)
-        elif self.message is not None:
-            await self.message.clear_reactions()
-            await self.message.edit(content=self.message.content, embed=config_embed)
-        else:
-            raise TypeError(
-                "Missing argument. "
-                + "You need to specify either 'channel' or 'message' as a target."
-            )
+        await self._publish(channel, **publish_kwargs)
 
         for emoji in self._emojis:
             await self.message.add_reaction(emoji)
@@ -173,10 +169,14 @@ class MultipleChoice(Dialog):
             )
         except asyncio.TimeoutError:
             self._choice = None
+            if "timeout_msg" in kwargs:
+                await self.quit(kwargs["timeout_msg"])
             return None, self.message
 
         if reaction.emoji == self.close_emoji:
             self._choice = None
+            if "quit_msg" in kwargs:
+                await self.quit(kwargs["quit_msg"])
             return None, self.message
 
         index = self._emojis.index(reaction.emoji)
