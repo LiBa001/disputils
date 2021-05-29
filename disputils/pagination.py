@@ -2,12 +2,30 @@ import discord
 from discord.ext import commands
 import asyncio
 from copy import deepcopy
-from typing import List, Tuple
+from typing import List, Union
+from collections import namedtuple
 from .abc import Dialog
 
 
+ControlEmojis = namedtuple(
+    "ControlEmojis",
+    ("first", "previous", "next", "last", "close"),
+    defaults=("⏮", "◀", "▶", "⏭", "⏹"),
+)
+
+
 class EmbedPaginator(Dialog):
-    """ Represents an interactive menu containing multiple embeds. """
+    """
+    Represents an interactive menu containing multiple embeds.
+
+    :param client: The :class:`discord.Client` to use.
+    :param pages: A list of :class:`discord.Embed` to paginate through.
+    :param message: An optional :class:`discord.Message` to edit.
+        Otherwise a new message will be sent.
+    :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
+        containing control emojis to use, otherwise the default will be used.
+        A value of `None` causes a reaction to be left out.
+    """
 
     def __init__(
         self,
@@ -15,25 +33,37 @@ class EmbedPaginator(Dialog):
         pages: [discord.Embed],
         message: discord.Message = None,
         *,
-        control_emojis: Tuple[str, str, str, str, str] = None,
+        control_emojis: Union[ControlEmojis, tuple, list] = ControlEmojis(),
     ):
-        """
-        Initialize a new EmbedPaginator.
-
-        :param client: The :class:`discord.Client` to use.
-        :param pages: A list of :class:`discord.Embed` to paginate through.
-        :param message: An optional :class:`discord.Message` to edit.
-            Otherwise a new message will be sent.
-        :param control_emojis: An option :class:`typing.Tuple` of control emojis to use,
-            otherwise the default will be used
-        """
         super().__init__()
 
         self._client = client
         self.pages = pages
         self.message = message
 
-        self.control_emojis = control_emojis or ("⏮", "◀", "▶", "⏭", "⏹")
+        if isinstance(control_emojis, ControlEmojis):
+            self.control_emojis = control_emojis
+        else:
+            control_emojis = tuple(control_emojis)
+            if len(control_emojis) == 1:
+                self.control_emojis = ControlEmojis(
+                    None, None, None, None, control_emojis[0]
+                )
+            elif len(control_emojis) == 2:
+                self.control_emojis = ControlEmojis(
+                    None, control_emojis[0], control_emojis[1], None, None
+                )
+            elif len(control_emojis) == 3:
+                self.control_emojis = ControlEmojis(
+                    None,
+                    control_emojis[0],
+                    control_emojis[1],
+                    None,
+                    control_emojis[2],
+                )
+            else:
+                control_emojis += (None,) * (5 - len(control_emojis))
+                self.control_emojis = ControlEmojis(*control_emojis)
 
     @property
     def formatted_pages(self) -> List[discord.Embed]:
@@ -56,7 +86,13 @@ class EmbedPaginator(Dialog):
                     )
         return pages
 
-    async def run(self, users: List[discord.User], channel: discord.TextChannel = None):
+    async def run(
+        self,
+        users: List[discord.User],
+        channel: discord.TextChannel = None,
+        timeout: int = 100,
+        **kwargs,
+    ):
         """
         Runs the paginator.
 
@@ -70,38 +106,48 @@ class EmbedPaginator(Dialog):
             The text channel to send the embed to.
             Must only be specified if `self.message` is `None`.
 
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
+
+        :param kwargs:
+            - text :class:`str`: Text to appear in the pagination message.
+            - timeout_msg :class:`str`: Text to appear when pagination times out.
+            - quit_msg :class:`str`: Text to appear when user quits the dialog.
+
         :return: None
         """
 
-        if channel is None and self.message is not None:
-            channel = self.message.channel
-        elif channel is None:
-            raise TypeError("Missing argument. You need to specify a target channel.")
-
         self._embed = self.pages[0]
+        text = kwargs.get("text")
 
         if len(self.pages) == 1:  # no pagination needed in this case
-            self.message = await channel.send(embed=self._embed)
+            await self._publish(channel, content=text, embed=self._embed)
             return
 
-        self.message = await channel.send(embed=self.formatted_pages[0])
+        channel = await self._publish(
+            channel, content=text, embed=self.formatted_pages[0]
+        )
         current_page_index = 0
 
         for emoji in self.control_emojis:
-            await self.message.add_reaction(emoji)
+            if emoji is not None:
+                await self.message.add_reaction(emoji)
 
-        def check(r: discord.Reaction, u: discord.User):
-            res = (r.message.id == self.message.id) and (r.emoji in self.control_emojis)
+        def check(r: discord.RawReactionActionEvent):
+            res = (r.message_id == self.message.id) and (
+                str(r.emoji) in self.control_emojis
+            )
 
             if len(users) > 0:
-                res = res and u.id in [u1.id for u1 in users]
+                res = res and r.user_id in [u1.id for u1 in users]
 
             return res
 
         while True:
             try:
-                reaction, user = await self._client.wait_for(
-                    "reaction_add", check=check, timeout=100
+                reaction = await self._client.wait_for(
+                    "raw_reaction_add", check=check, timeout=timeout
                 )
             except asyncio.TimeoutError:
                 if not isinstance(
@@ -111,9 +157,11 @@ class EmbedPaginator(Dialog):
                         await self.message.clear_reactions()
                     except discord.Forbidden:
                         pass
+                if "timeout_msg" in kwargs:
+                    await self.display(kwargs["timeout_msg"])
                 return
 
-            emoji = reaction.emoji
+            emoji = str(reaction.emoji)
             max_index = len(self.pages) - 1  # index for the last page
 
             if emoji == self.control_emojis[0]:
@@ -137,15 +185,13 @@ class EmbedPaginator(Dialog):
                 load_page_index = max_index
 
             else:
-                await self.message.delete()
+                await self.quit(kwargs.get("quit_msg"))
                 return
 
-            await self.message.edit(embed=self.formatted_pages[load_page_index])
-            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(
-                channel, discord.channel.GroupChannel
-            ):
+            await self.display(text, self.formatted_pages[load_page_index])
+            if reaction.member:
                 try:
-                    await self.message.remove_reaction(reaction, user)
+                    await self.message.remove_reaction(emoji, reaction.member)
                 except discord.Forbidden:
                     pass
 
@@ -192,22 +238,26 @@ class EmbedPaginator(Dialog):
 
 
 class BotEmbedPaginator(EmbedPaginator):
+    """
+    Same as :class:`EmbedPaginator`, except for the discord.py commands extension.
+
+    :param ctx: The :class:`discord.ext.commands.Context` to use.
+    :param pages: A list of :class:`discord.Embed` to paginate through.
+    :param message: An optional :class:`discord.Message` to edit.
+        Otherwise a new message will be sent.
+    :param control_emojis: :class:`ControlEmojis`, `tuple` or `list`
+        containing control emojis to use, otherwise the default will be used.
+        A value of `None` causes a reaction to be left out.
+    """
+
     def __init__(
         self,
         ctx: commands.Context,
         pages: [discord.Embed],
         message: discord.Message = None,
         *,
-        control_emojis: Tuple[str, str, str, str, str] = None,
+        control_emojis: Union[ControlEmojis, tuple, list] = ControlEmojis(),
     ):
-        """
-        Initialize a new EmbedPaginator.
-
-        :param ctx: The :class:`discord.ext.commands.Context` to use.
-        :param pages: A list of :class:`discord.Embed` to paginate through.
-        :param message: An optional :class:`discord.Message` to edit.
-            Otherwise a new message will be sent.
-        """
         self._ctx = ctx
 
         super(BotEmbedPaginator, self).__init__(
@@ -215,7 +265,11 @@ class BotEmbedPaginator(EmbedPaginator):
         )
 
     async def run(
-        self, channel: discord.TextChannel = None, users: List[discord.User] = None
+        self,
+        channel: discord.TextChannel = None,
+        users: List[discord.User] = None,
+        timeout: int = 100,
+        **kwargs,
     ):
         """
         Runs the paginator.
@@ -231,6 +285,15 @@ class BotEmbedPaginator(EmbedPaginator):
             Default is the context author.
             Passing an empty list will grant access to all users. (Not recommended.)
 
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
+
+        :param kwargs:
+            - text :class:`str`: Text to appear in the pagination message.
+            - timeout_msg :class:`str`: Text to appear when pagination times out.
+            - quit_msg :class:`str`: Text to appear when user quits the dialog.
+
         :return: None
         """
 
@@ -240,4 +303,4 @@ class BotEmbedPaginator(EmbedPaginator):
         if self.message is None and channel is None:
             channel = self._ctx.channel
 
-        await super().run(users, channel)
+        await super().run(users, channel, timeout, **kwargs)

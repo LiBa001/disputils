@@ -35,6 +35,7 @@ class Confirmation(Dialog):
         user: discord.User,
         channel: discord.TextChannel = None,
         hide_author: bool = False,
+        timeout: int = 20,
     ) -> bool or None:
         """
         Run the confirmation.
@@ -52,6 +53,10 @@ class Confirmation(Dialog):
         :param hide_author: Whether or not the ``user`` should be set as embed author.
         :type hide_author: bool, optional
 
+        :type timeout: int
+        :param timeout:
+            Seconds to wait until stopping to listen for user interaction.
+
         :return: True when it's been confirmed, otherwise False. Will return None when a
             timeout occurs.
         :rtype: :class:`bool`, optional
@@ -63,38 +68,31 @@ class Confirmation(Dialog):
 
         self._embed = emb
 
-        if channel is None and self.message is not None:
-            channel = self.message.channel
-        elif channel is None:
-            raise TypeError("Missing argument. You need to specify a target channel.")
-
-        msg = await channel.send(embed=emb)
-        self.message = msg
+        await self._publish(channel, embed=emb)
+        msg = self.message
 
         for emoji in self.emojis:
             await msg.add_reaction(emoji)
 
         try:
-            reaction, user = await self._client.wait_for(
-                "reaction_add",
-                check=lambda r, u: (r.message.id == msg.id)
-                and (u.id == user.id)
-                and (r.emoji in self.emojis),
-                timeout=20,
+            reaction = await self._client.wait_for(
+                "raw_reaction_add",
+                check=lambda r: (r.message_id == msg.id)
+                and (r.user_id == user.id)
+                and (str(r.emoji) in self.emojis),
+                timeout=timeout,
             )
         except asyncio.TimeoutError:
             self._confirmed = None
             return
+        else:
+            self._confirmed = self.emojis[str(reaction.emoji)]
+            return self._confirmed
         finally:
             try:
                 await msg.clear_reactions()
             except discord.Forbidden:
                 pass
-
-        confirmed = self.emojis[reaction.emoji]
-
-        self._confirmed = confirmed
-        return confirmed
 
 
 class BotConfirmation(Confirmation):
@@ -114,6 +112,7 @@ class BotConfirmation(Confirmation):
         user: discord.User = None,
         channel: discord.TextChannel = None,
         hide_author: bool = False,
+        timeout: int = 20,
     ) -> bool or None:
 
         if user is None:
@@ -122,4 +121,4 @@ class BotConfirmation(Confirmation):
         if self.message is None and channel is None:
             channel = self._ctx.channel
 
-        return await super().confirm(text, user, channel, hide_author=hide_author)
+        return await super().confirm(text, user, channel, hide_author, timeout)

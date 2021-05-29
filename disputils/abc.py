@@ -1,5 +1,5 @@
 from abc import ABC
-from discord import Message, Embed
+from discord import Message, Embed, TextChannel, errors
 from typing import Optional
 
 
@@ -10,6 +10,23 @@ class Dialog(ABC):
         self._embed: Optional[Embed] = None
         self.message: Optional[Message] = None
         self.color: hex = kwargs.get("color") or kwargs.get("colour") or 0x000000
+
+    async def _publish(self, channel: Optional[TextChannel], **kwargs) -> TextChannel:
+        if channel is None and self.message is None:
+            raise TypeError(
+                "Missing argument. You need to specify a target channel or message."
+            )
+
+        if channel is None:
+            try:
+                await self.message.edit(**kwargs)
+            except errors.NotFound:
+                self.message = None
+
+        if self.message is None:
+            self.message = await channel.send(**kwargs)
+
+        return self.message.channel
 
     async def quit(self, text: str = None):
         """
@@ -23,9 +40,13 @@ class Dialog(ABC):
 
         if text is None:
             await self.message.delete()
+            self.message = None
         else:
-            await self.message.edit(content=text, embed=None)
-            await self.message.clear_reactions()
+            await self.display(text)
+            try:
+                await self.message.clear_reactions()
+            except errors.Forbidden:
+                pass
 
     async def update(self, text: str, color: hex = None, hide_author: bool = False):
         """
