@@ -18,7 +18,7 @@ setup(
         "Programming Language :: Python :: 3.6",
     ],
     python_requires=">=3.6",
-    install_requires=["py-cord"],
+    install_requires=["py-cord @ git+https://github.com/Pycord-Development/pycord@master"],
     keywords="discord discord-py discord-bot utils utility",
     packages=find_packages(exclude=["examples", "docs", "tests"]),
     data_files=None,
