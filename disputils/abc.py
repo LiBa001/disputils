@@ -48,7 +48,7 @@ class Dialog(ABC):
             except errors.Forbidden:
                 pass
 
-    async def update(self, text: str, color: hex = None, hide_author: bool = False):
+    async def update(self, text: str, color: hex = None, hide_author: bool = False, delete_after: int = None):
         """
         This will update the dialog embed.
 
@@ -68,9 +68,9 @@ class Dialog(ABC):
         if hide_author:
             self._embed.set_author(name="")
 
-        await self.display(embed=self._embed)
+        await self.display(embed=self._embed, delete_after=delete_after)
 
-    async def display(self, text: str = None, embed: Embed = None):
+    async def display(self, text: str = None, embed: Embed = None,  delete_after: int = None):
         """
         This will edit the dialog message.
 
@@ -79,4 +79,4 @@ class Dialog(ABC):
         :rtype: ``None``
         """
 
-        await self.message.edit(content=text, embed=embed)
+        await self.message.edit(content=text, embed=embed, delete_after=delete_after)
